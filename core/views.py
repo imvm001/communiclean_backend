@@ -1,8 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Customer
-
+from .models import Customer, ServiceBooking
 
 class BookingAPI(APIView):
     def post(self, request):
@@ -10,14 +9,9 @@ class BookingAPI(APIView):
         location = request.data.get('location')
 
         if not name or not location:
-            return Response({'error': 'But name and location are required'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Missing data'}, status=400)
 
-        Customer.objects.create(
-            name=name,
-            location=location,
-        )
+        customer, _ = Customer.objects.get_or_create(name=name, location=location)
+        ServiceBooking.objects.create(customer=customer)
 
-        return Response({"message": "Booking submitted successfully!"},
-    
-    status=status.HTTP_201_CREATED)
-    
+        return Response({'message': 'Booking stored successfully'}, status=status.HTTP_201_CREATED)
